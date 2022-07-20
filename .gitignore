@@ -12,6 +12,8 @@ docs/tagfile.xml
 /bin/*
 !/bin/data/
 
+example/bin/data/*.json
+
 [Bb]uild/
 [Oo]bj/
 *.o
