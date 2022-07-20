@@ -7,11 +7,13 @@
 
 #include "ofxSoundDeviceManager.h"
 
-void ofxSoundDeviceManager::setup(bool enableInput){
+void ofxSoundDeviceManager::setup(ofxSoundDeviceManagerMode mode){
     if(_bSetup){
         ofLogWarning("ofxSoundDeviceManager::setup") << "is already setup.";
         return;
     }
+    _mode = mode;
+    
     gui.setup("Sound Devices", "sound_devices.json");
 
     sampleRates.disableMultipleSelection();
@@ -20,16 +22,20 @@ void ofxSoundDeviceManager::setup(bool enableInput){
     bufferSize.disableMultipleSelection();
     bufferSize.enableCollapseOnSelection();
     
-    _enableInput = enableInput;
+    
     settings.bufferSize = 256;
     settings.numBuffers = 1;
     
     _makeBufferSizes();
     bufferSize.selectedValue = settings.bufferSize;
     
-    if(_enableInput){
+    if(_mode == OFX_SOUND_MANAGER_LIVE_INPUT){
+        inputLive = make_unique<ofxSoundInput>();
+        
         inputParams = make_unique<ofxSoundDeviceParams>(true);
         inputParams->setup(this);
+    }else if(_mode == OFX_SOUND_MANAGER_FILE_INPUT){
+        inputPrerecorded = make_unique<ofxPrerecordedInput>();
     }
     outputParams = make_unique<ofxSoundDeviceParams>(false);
     outputParams->setup(this);
@@ -62,7 +68,7 @@ void ofxSoundDeviceManager::_makeBufferSizes(){
 
 void ofxSoundDeviceManager::updateSampleRates(){
     sampleRates.clear();
-    if(!_enableInput){
+    if(_mode != OFX_SOUND_MANAGER_LIVE_INPUT){
         sampleRates.add(outputParams->currentDevice.sampleRates);
     }else{
         auto & o_sr = outputParams->currentDevice.sampleRates;
@@ -89,7 +95,7 @@ void ofxSoundDeviceManager::updateSampleRates(){
 }
 
 void ofxSoundDeviceManager::setStream(){
-    if(_enableInput && inputParams) inputParams->updateSettings();
+    if(_mode == OFX_SOUND_MANAGER_LIVE_INPUT && inputParams) inputParams->updateSettings();
     if(outputParams)outputParams->updateSettings();
     settings.bufferSize = bufferSize.selectedValue.get();
     settings.sampleRate = sampleRates.selectedValue.get();
@@ -98,11 +104,73 @@ void ofxSoundDeviceManager::setStream(){
     stream.close();
     stream.setup(settings);
     stream.setOutput(output);
-    if(_enableInput){
-        stream.setInput(input);
+    if(_mode == OFX_SOUND_MANAGER_LIVE_INPUT && inputLive){
+        stream.setInput(*inputLive);
     }
 }
 
 void ofxSoundDeviceManager::draw(){
     gui.draw();
+}
+
+ofxSoundObject * ofxSoundDeviceManager::getInput(){
+    if(_mode == OFX_SOUND_MANAGER_LIVE_INPUT ){
+        return inputLive.get();
+    }else if(_mode == OFX_SOUND_MANAGER_FILE_INPUT ){
+        return inputPrerecorded.get();
+    }
+    return nullptr;
+}
+
+bool isFolder(string folderPath){
+    ofFile f(folderPath);
+    if(f.exists()){
+        return f.isDirectory();
+    }
+    return false;
+}
+
+bool folderCheck(string folderPath, string msgHeader){
+    if(!isFolder(folderPath)){
+        ofLogWarning(msgHeader) << "folderPath does not point to a folder";
+        return false;
+    }
+    return true;
+}
+
+bool ofxSoundDeviceManager::load(string folderPath, bool stream){
+    
+    if(!folderCheck(folderPath, "ofxSoundDeviceManager::load")){ return false; }
+    
+    if(_mode == OFX_SOUND_MANAGER_FILE_INPUT){
+        if(inputPrerecorded){
+            return inputPrerecorded->load(folderPath, stream);
+        }
+        return false;
+    }
+    ofLogWarning("ofxSoundDeviceManager::load") << "you should no call load function when mode is other than OFX_SOUND_MANAGER_FILE_INPUT";
+    return false;
+}
+
+bool ofxSoundDeviceManager::loadAsync(std::filesystem::path folderPath, bool bAutoplay){
+    if(!folderCheck(folderPath, "ofxSoundDeviceManager::loadAsync")){ return false; }
+    if(_mode == OFX_SOUND_MANAGER_FILE_INPUT){
+        if(inputPrerecorded){
+            return inputPrerecorded->loadAsync(folderPath, bAutoplay);
+        }
+        return false;
+    }
+    ofLogWarning("ofxSoundDeviceManager::load") << "you should no call load function when mode is other than OFX_SOUND_MANAGER_FILE_INPUT";
+    return false;
+}
+
+ofxSoundInput* ofxSoundDeviceManager::getLiveInput(){
+    if(!inputLive)
+    { return nullptr; }
+    return  inputLive.get();
+}
+ofxPrerecordedInput* ofxSoundDeviceManager::getPrerecordedInput(){
+    if(!inputPrerecorded){
+        return nullptr;}
+    return  inputPrerecorded.get();
 }
