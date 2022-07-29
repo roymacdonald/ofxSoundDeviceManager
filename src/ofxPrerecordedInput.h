@@ -14,6 +14,7 @@ class ofxPrerecordedInput: public ofxBaseSoundPlayer{
 public:
     ofxPrerecordedInput(){
         audioOutCount = 0;
+        gain = 1;
     }
     
     virtual bool load(const ofSoundBuffer& loadBuffer, const std::string& name) override;
@@ -45,7 +46,15 @@ public:
     virtual void audioOut(ofSoundBuffer &output) override;
     
     string getCurrentStats();
-
+    
+    void setPositionMS(int ms);
+    
+    void getPlayersCombinedBuffer(ofSoundBuffer & outBuffer);
+    
+    virtual size_t getNumChannels() override;
+    
+    void setGain(float gain);
+    
 private:
     bool _loadHelper(std::filesystem::path filePath, bool stream, bool bAutoPlay, bool bAsync);
     //when puting ofxSoundPlayerObjects into a vector you need to do so using shared_ptr or unique_ptr
@@ -62,6 +71,8 @@ private:
   
     atomic<size_t> audioOutCount;
     atomic<size_t> numOutChannels;
+
+    atomic<float> gain;
     
     
 };

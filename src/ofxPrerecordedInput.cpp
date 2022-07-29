@@ -24,7 +24,7 @@ bool ofxPrerecordedInput::_loadHelper(std::filesystem::path filePath, bool strea
         dir.allowExt("aiff");
         dir.allowExt("mp3");
         dir.listDir();
-        
+        dir.sort();
         players.resize(dir.size());
 
         //this example will connect each sound player to a consecutive sound output.
@@ -163,13 +163,18 @@ void ofxPrerecordedInput::audioOut(ofSoundBuffer &output) {
     buf.setSampleRate(output.getSampleRate());
     buf.setNumChannels(1);
     buf.allocate(output.getNumFrames(), 1);
-    int  n = MIN(output.getNumChannels() , players.size());
-    audioOutCount = audioOutCount +1;
-    numOutChannels = output.getNumChannels();
+    numOutChannels = players.size();
+    output.allocate(output.getNumFrames(), numOutChannels);
+    
+    
+//    audioOutCount = audioOutCount +1;
+   
 //    output.setNumChannels(players.size());
-    for(size_t i = 0; i < n; i++){
+    float _gain = gain.load();
+    for(size_t i = 0; i < numOutChannels; i++){
         players[i]->audioOut(buf);
-        output.setChannel(buf, i+1);
+        buf *= _gain;
+        output.setChannel(buf, i);
     }
     
 //    cout << "-";
@@ -178,6 +183,9 @@ void ofxPrerecordedInput::audioOut(ofSoundBuffer &output) {
     
 }
 
+void ofxPrerecordedInput::setGain(float _gain){
+    gain = _gain;
+}
 
 string ofxPrerecordedInput::getCurrentStats(){
     stringstream ss;
@@ -197,4 +205,31 @@ string ofxPrerecordedInput::getCurrentStats(){
     
     
     return ss.str();
+}
+
+void ofxPrerecordedInput::setPositionMS(int ms){
+    for(auto& p : players){
+        p->setPositionMS(ms);
+    }
+}
+
+void ofxPrerecordedInput::getPlayersCombinedBuffer(ofSoundBuffer & outBuffer)
+{
+    outBuffer.clear();
+    
+    outBuffer.setNumChannels(players.size());
+    outBuffer.allocate(players[0]->getNumFrames(), players.size());
+    for(size_t i = 0; i < players.size(); i++){
+        outBuffer.setChannel(players[i]->getSoundFile().getBuffer(), i);
+    }
+    outBuffer *= gain.load();
+    outBuffer.setSampleRate(players[0]->getSourceSampleRate());
+
+}
+size_t ofxPrerecordedInput::getNumChannels(){
+    size_t c = 0;
+    for(auto& p : players){
+        c += p->getNumChannels();
+    }
+    return c;
 }
