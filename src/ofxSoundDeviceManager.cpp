@@ -7,12 +7,12 @@
 
 #include "ofxSoundDeviceManager.h"
 
-void ofxSoundDeviceManager::setup(ofxSoundDeviceManagerMode mode){
+void ofxSoundDeviceManager::setup(){
     if(_bSetup){
         ofLogWarning("ofxSoundDeviceManager::setup") << "is already setup.";
         return;
     }
-    _mode = mode;
+
     
     gui.setup("Sound Devices", "sound_devices.json");
 
@@ -29,14 +29,10 @@ void ofxSoundDeviceManager::setup(ofxSoundDeviceManagerMode mode){
     _makeBufferSizes();
     bufferSize.selectedValue = settings.bufferSize;
     
-    if(_mode == OFX_SOUND_MANAGER_LIVE_INPUT){
         inputLive = make_unique<ofxSoundInput>();
         
         inputParams = make_unique<ofxSoundDeviceParams>(true);
         inputParams->setup(this);
-    }else if(_mode == OFX_SOUND_MANAGER_FILE_INPUT){
-        inputPrerecorded = make_unique<ofxPrerecordedInput>();
-    }
     outputParams = make_unique<ofxSoundDeviceParams>(false);
     outputParams->setup(this);
 
@@ -68,9 +64,8 @@ void ofxSoundDeviceManager::_makeBufferSizes(){
 
 void ofxSoundDeviceManager::updateSampleRates(){
     sampleRates.clear();
-    if(_mode != OFX_SOUND_MANAGER_LIVE_INPUT){
-        sampleRates.add(outputParams->currentDevice.sampleRates);
-    }else{
+    
+    
         auto & o_sr = outputParams->currentDevice.sampleRates;
         auto & i_sr = inputParams->currentDevice.sampleRates;
         std::set<unsigned int> merged_SR;
@@ -89,14 +84,14 @@ void ofxSoundDeviceManager::updateSampleRates(){
         ofSort(merged);
         
         sampleRates.add(merged);
-        
-    }
+    
     
 }
 
 void ofxSoundDeviceManager::setStream(){
-    if(_mode == OFX_SOUND_MANAGER_LIVE_INPUT && inputParams) inputParams->updateSettings();
+    if(inputParams) inputParams->updateSettings();
     if(outputParams)outputParams->updateSettings();
+    
     settings.bufferSize = bufferSize.selectedValue.get();
     settings.sampleRate = sampleRates.selectedValue.get();
     settings.numBuffers = numBuffers.get();
@@ -104,7 +99,7 @@ void ofxSoundDeviceManager::setStream(){
     stream.close();
     stream.setup(settings);
     stream.setOutput(output);
-    if(_mode == OFX_SOUND_MANAGER_LIVE_INPUT && inputLive){
+    if(inputLive){
         stream.setInput(*inputLive);
     }
 }
@@ -114,12 +109,12 @@ void ofxSoundDeviceManager::draw(){
 }
 
 ofxSoundObject * ofxSoundDeviceManager::getInput(){
-    if(_mode == OFX_SOUND_MANAGER_LIVE_INPUT ){
+//    if(_mode == OFX_SOUND_MANAGER_LIVE_INPUT ){
         return inputLive.get();
-    }else if(_mode == OFX_SOUND_MANAGER_FILE_INPUT ){
-        return inputPrerecorded.get();
-    }
-    return nullptr;
+//    }else if(_mode == OFX_SOUND_MANAGER_FILE_INPUT ){
+//        return inputPrerecorded.get();
+//    }
+//    return nullptr;
 }
 
 bool isFolder(string folderPath){
@@ -138,39 +133,39 @@ bool folderCheck(string folderPath, string msgHeader){
     return true;
 }
 
-bool ofxSoundDeviceManager::load(string folderPath, bool stream){
-    
-    if(!folderCheck(folderPath, "ofxSoundDeviceManager::load")){ return false; }
-    
-    if(_mode == OFX_SOUND_MANAGER_FILE_INPUT){
-        if(inputPrerecorded){
-            return inputPrerecorded->load(folderPath, stream);
-        }
-        return false;
-    }
-    ofLogWarning("ofxSoundDeviceManager::load") << "you should no call load function when mode is other than OFX_SOUND_MANAGER_FILE_INPUT";
-    return false;
-}
-
-bool ofxSoundDeviceManager::loadAsync(std::filesystem::path folderPath, bool bAutoplay){
-    if(!folderCheck(folderPath, "ofxSoundDeviceManager::loadAsync")){ return false; }
-    if(_mode == OFX_SOUND_MANAGER_FILE_INPUT){
-        if(inputPrerecorded){
-            return inputPrerecorded->loadAsync(folderPath, bAutoplay);
-        }
-        return false;
-    }
-    ofLogWarning("ofxSoundDeviceManager::load") << "you should no call load function when mode is other than OFX_SOUND_MANAGER_FILE_INPUT";
-    return false;
-}
+//bool ofxSoundDeviceManager::load(string folderPath, bool stream){
+//
+//    if(!folderCheck(folderPath, "ofxSoundDeviceManager::load")){ return false; }
+//
+//    if(_mode == OFX_SOUND_MANAGER_FILE_INPUT){
+//        if(inputPrerecorded){
+//            return inputPrerecorded->load(folderPath, stream);
+//        }
+//        return false;
+//    }
+//    ofLogWarning("ofxSoundDeviceManager::load") << "you should no call load function when mode is other than OFX_SOUND_MANAGER_FILE_INPUT";
+//    return false;
+//}
+//
+//bool ofxSoundDeviceManager::loadAsync(std::filesystem::path folderPath, bool bAutoplay){
+//    if(!folderCheck(folderPath, "ofxSoundDeviceManager::loadAsync")){ return false; }
+//    if(_mode == OFX_SOUND_MANAGER_FILE_INPUT){
+//        if(inputPrerecorded){
+//            return inputPrerecorded->loadAsync(folderPath, bAutoplay);
+//        }
+//        return false;
+//    }
+//    ofLogWarning("ofxSoundDeviceManager::load") << "you should no call load function when mode is other than OFX_SOUND_MANAGER_FILE_INPUT";
+//    return false;
+//}
 
 ofxSoundInput* ofxSoundDeviceManager::getLiveInput(){
     if(!inputLive)
     { return nullptr; }
     return  inputLive.get();
 }
-ofxPrerecordedInput* ofxSoundDeviceManager::getPrerecordedInput(){
-    if(!inputPrerecorded){
-        return nullptr;}
-    return  inputPrerecorded.get();
-}
+//ofxPrerecordedInput* ofxSoundDeviceManager::getPrerecordedInput(){
+//    if(!inputPrerecorded){
+//        return nullptr;}
+//    return  inputPrerecorded.get();
+//}

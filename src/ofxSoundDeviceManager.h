@@ -11,23 +11,23 @@
 #include "ofxGui.h"
 #include "ofxDropdown.h"
 #include "ofxSoundDeviceParams.h"
-#include "ofxPrerecordedInput.h"
 
 
-enum ofxSoundDeviceManagerMode{
-    OFX_SOUND_MANAGER_NO_INPUT = 0,
-    OFX_SOUND_MANAGER_LIVE_INPUT = 1,
-    OFX_SOUND_MANAGER_FILE_INPUT = 2
-};
+
+//enum ofxSoundDeviceManagerMode{
+//    OFX_SOUND_MANAGER_NO_INPUT = 0,
+//    OFX_SOUND_MANAGER_LIVE_INPUT = 1,
+//    OFX_SOUND_MANAGER_FILE_INPUT = 2
+//};
 
 
 class ofxSoundDeviceManager{
 public:
     
     
-    void setup(ofxSoundDeviceManagerMode mode);
-    bool load(string folderPath, bool stream = false);
-    bool loadAsync(std::filesystem::path folderPath, bool bAutoplay);
+    void setup();
+//    bool load(string folderPath, bool stream = false);
+//    bool loadAsync(string folderPath, bool bAutoplay);
     
     void draw();
     
@@ -55,23 +55,23 @@ public:
     
     ofxSoundObject * getInput();
     
-    ofxSoundDeviceManagerMode getMode(){return _mode;}
+    
     
     ofxSoundInput* getLiveInput();
-    ofxPrerecordedInput* getPrerecordedInput();
+    
     
 protected:
     
     
     unique_ptr<ofxSoundInput> inputLive = nullptr;
-    unique_ptr<ofxPrerecordedInput> inputPrerecorded = nullptr;
+    
     
     void _makeBufferSizes();
     
     void setStream();
 private:
 
-    ofxSoundDeviceManagerMode _mode = OFX_SOUND_MANAGER_NO_INPUT;
+//    ofxSoundDeviceManagerMode _mode = OFX_SOUND_MANAGER_NO_INPUT;
     
     bool _bSetup = false;
     
