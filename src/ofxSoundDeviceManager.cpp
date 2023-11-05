@@ -56,6 +56,10 @@ void ofxSoundDeviceManager::setup(ofxSoundDeviceManagerMode mode){
     _bSetup = true;
     
 }
+void ofxSoundDeviceManager::saveSettings(){
+    gui.saveToFile("sound_devices.json");
+}
+
 
 void ofxSoundDeviceManager::_makeBufferSizes(){
     unsigned int v = 64;

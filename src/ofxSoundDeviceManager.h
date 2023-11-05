@@ -28,6 +28,7 @@ public:
     void setup(ofxSoundDeviceManagerMode mode);
     bool load(string folderPath, bool stream = false);
     bool loadAsync(std::filesystem::path folderPath, bool bAutoplay);
+    void saveSettings();
     
     void draw();
     

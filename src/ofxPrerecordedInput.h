@@ -69,10 +69,10 @@ private:
     };
     std::map<string, AsyncLoadState> asyncFileLoaded;
   
-    atomic<size_t> audioOutCount;
-    atomic<size_t> numOutChannels;
+    std::atomic<size_t> audioOutCount;
+    std::atomic<size_t> numOutChannels;
 
-    atomic<float> gain;
+    std::atomic<float> gain;
     
     
 };

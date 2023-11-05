@@ -199,7 +199,7 @@ string ofxPrerecordedInput::getCurrentStats(){
         ss << i << " : ";
         ss << "frames: " << players[i]->getNumFrames() << " ";
         ss << "channels: " << players[i]->getNumChannels() << " ";
-        ss << "playing: " << boolalpha << players[i]->isPlaying() << " ";
+        ss << "playing: " << std::boolalpha << players[i]->isPlaying() << " ";
         ss << "position : " << players[i]->getPosition() << endl;
     }
     
