@@ -25,7 +25,7 @@ public:
     void deviceChanged(int& deviceID);
     
 
-    void channelsChanged(unsigned int& c);
+    void channelsChanged(int& c);
     
     void updateSettings();
     
@@ -34,7 +34,7 @@ public:
     ofSoundDevice currentDevice;
     ofxDropdown_<int> device = {"device"} ;
     
-    ofxDropdown_<unsigned int> channels = {"num channels"} ;
+    ofxDropdown_<int> channels = {"num channels"} ;
     
     bool bIsInput = false;
     ofxGuiGroup group;

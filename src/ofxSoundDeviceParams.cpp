@@ -57,6 +57,7 @@ void ofxSoundDeviceParams::setup(ofxSoundDeviceManager * _manager){
 }
 
 void ofxSoundDeviceParams::deviceChanged(int& deviceID){
+//    cout << "ofxSoundDeviceParams::deviceChanged" << deviceID << "\n";
     bool bFound = false;
     size_t found_index;
     for(size_t i = 0; i < devices.size(); i ++){
@@ -74,20 +75,22 @@ void ofxSoundDeviceParams::deviceChanged(int& deviceID){
         channels.clear();
         auto chans = bIsInput?currentDevice.inputChannels:currentDevice.outputChannels;
         for(unsigned int i = 0; i < chans; i++){
-            channels.add( i + 1 );
+            channels.add( i + 1 , ofToString(i + 1) );
+            channels.deselect();
         }
-        
+        channels.selectedValue = chans;
         
         if(manager){
             manager->updateSampleRates();
+            manager->loadSettings();
         }
         
     }
     
 }
 
-void ofxSoundDeviceParams::channelsChanged(unsigned int& c){
-
+void ofxSoundDeviceParams::channelsChanged(int& c){
+//    cout << "ofxSoundDeviceParams::channelsChanged isInput: " << std::boolalpha << bIsInput << " chan: " << c << "NumChans: " << channels.getNumOptions() << "\n";
 }
 
 void ofxSoundDeviceParams::updateSettings(){
