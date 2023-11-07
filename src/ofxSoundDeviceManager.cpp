@@ -49,13 +49,19 @@ void ofxSoundDeviceManager::setup(ofxSoundDeviceManagerMode mode){
     gui.add(setupStream);
     listeners.push( setupStream.newListener(this, &ofxSoundDeviceManager::setStream));
     
+    loadSettings();
+    
+    _bSetup = true;
+    
+}
+
+void ofxSoundDeviceManager::loadSettings(){
     if(ofFile::doesFileExist("sound_devices.json")){
         gui.loadFromFile("sound_devices.json");
         setStream();
     }
-    _bSetup = true;
-    
 }
+
 void ofxSoundDeviceManager::saveSettings(){
     gui.saveToFile("sound_devices.json");
 }
@@ -67,10 +73,10 @@ void ofxSoundDeviceManager::_makeBufferSizes(){
         bufferSize.add(v);
         v *= 2;
     }
-    
 }
-
+ 
 void ofxSoundDeviceManager::updateSampleRates(){
+//    cout << "ofxSoundDeviceManager::updateSampleRates\n";
     sampleRates.clear();
     if(_mode != OFX_SOUND_MANAGER_LIVE_INPUT){
         sampleRates.add(outputParams->currentDevice.sampleRates);

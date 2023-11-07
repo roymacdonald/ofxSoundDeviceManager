@@ -29,6 +29,7 @@ public:
     bool load(string folderPath, bool stream = false);
     bool loadAsync(std::filesystem::path folderPath, bool bAutoplay);
     void saveSettings();
+    void loadSettings();
     
     void draw();
     
